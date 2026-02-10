@@ -27,7 +27,7 @@ def download_audio(url):
             'preferredcodec': 'wav',
             'preferredquality': '192',
         }],
-        'outtmpl': 'temp_audio',
+        'outtmpl': 'temp_audio.%(ext)s',
         'quiet': True,
         'no_warnings': True,
     }
