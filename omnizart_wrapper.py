@@ -1,6 +1,8 @@
 import pandas as pd
 import pretty_midi
 import os
+import soundfile as sf
+import tempfile
 from utils.config import SETTINGS
 
 class OmnizartWrapper:
@@ -14,36 +16,39 @@ class OmnizartWrapper:
             print("Omnizart not found. Please install it with `pip install omnizart`.")
             self.app = None
 
-    def predict(self, audio_path):
+    def predict(self, samples, sr):
+        """
+        Predict drum hits from audio samples.
+        Args:
+            samples (np.ndarray): Audio samples.
+            sr (int): Sampling rate.
+        Returns:
+            pd.DataFrame: DataFrame with columns ['time', 'prediction', 'confidence']
+        """
         if self.app is None:
             raise ImportError("Omnizart not installed.")
 
-        # Omnizart transcription
-        # It usually outputs a MIDI file to the same directory or specified output
+        # Omnizart expects a file path, not raw samples.
+        # We need to save samples to a temporary wav file.
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
+            temp_path = temp_audio.name
+            
         try:
-            midi_data = self.app.transcribe(audio_path)
-            # The transcribe function might return a MIDI object directly or write file
-            # Checking documentation/source behavior: usually writes file. 
-            # But let's check if we can get the MIDI object directly.
-            # If not, we reload the midi file.
+            sf.write(temp_path, samples, sr, subtype='PCM_16')
+            
+            # Omnizart transcription
+            midi_data = self.app.transcribe(temp_path)
+            
         except Exception as e:
             print(f"Error in Omnizart transcription: {e}")
             return pd.DataFrame(columns=['time', 'prediction', 'confidence'])
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
         # Process MIDI data
         # Mapping MIDI pitches to our labels
-        # GM Drum Map: 
-        # 35, 36 -> Kick
-        # 38, 40 -> Snare
-        # 42, 44, 46 -> HiHat (Closed/Pedal/Open)
-        # 41, 43, 45, 47, 48, 50 -> Toms
-        # 49, 57 -> Crash
-        # 51, 59 -> Ride
-        
-        # We need to standardize this mapping.
-        # Reverse map from SETTINGS['LABELS_INDEX'] which is:
-        # {0: 'kick_drum', 1: 'snare', ...}
-        
         label_map = {
             35: 'kick_drum', 36: 'kick_drum',
             38: 'snare', 40: 'snare',
