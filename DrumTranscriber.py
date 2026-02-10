@@ -14,7 +14,7 @@ from utils.audio_utils import get_mel_spectrogram, get_onset_times, get_onset_sa
 
 class DrumTranscriber:
     def __init__(self):
-        self.model = tf.keras.models.load_model(SETTINGS["SAVED_MODEL_PATH"])
+        self.model = tf.keras.models.load_model(SETTINGS["SAVED_MODEL_PATH"], compile=False)
 
     def predict(self, samples: np.array, sr: int) -> pd.DataFrame:
         """
