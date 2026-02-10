@@ -11,13 +11,25 @@ from DrumTranscriber import DrumTranscriber
 from utils.config import SETTINGS
 
 # Initialize transcriber globally
-try:
-    transcriber = DrumTranscriber()
-    print("Model loaded successfully.")
-except Exception as e:
-    print(f"Error loading model: {e}")
-    print("Ensure 'model/drum_transcriber.h5' exists. If on Colab, check the download step.")
-    transcriber = None
+transcriber = None
+
+def load_model():
+    global transcriber
+    if transcriber is not None:
+        return transcriber
+        
+    try:
+        print("Loading model...")
+        transcriber = DrumTranscriber()
+        print("Model loaded successfully.")
+        return transcriber
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        print("Ensure 'model/drum_transcriber.h5' exists. If on Colab, check the download step.")
+        return None
+
+# Try loading initially (optional, but good if model already exists)
+load_model()
 
 def download_audio(url, progress=gr.Progress()):
     progress(0, desc="Starting download...")
@@ -67,13 +79,15 @@ def process_audio(audio_file, start_time, duration=30, progress=gr.Progress()):
     except Exception as e:
         return None, None, None, f"Error loading audio: {e}"
 
-    if transcriber is None:
-        return None, None, None, "Transcriber model not loaded."
+    # Ensure model is loaded
+    model = load_model()
+    if model is None:
+        return None, None, None, "Transcriber model not loaded. Please ensure 'model/drum_transcriber.h5' exists."
 
     # Predict
     try:
         progress(0.4, desc="Transcribing (this may take a moment)...")
-        preds = transcriber.predict(samples, sr)
+        preds = model.predict(samples, sr)
     except Exception as e:
         return None, None, None, f"Error during prediction: {e}"
 
