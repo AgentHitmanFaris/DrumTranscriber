@@ -6,53 +6,56 @@ This package helps users transcribes drum audio hits into 6 classes - Hihat, Cra
 
 ![demo](https://github.com/AgentHitmanFaris/DrumTranscriber/blob/main/assets/demo.gif?raw=true)
 
+## Quick Start (Windows Portable App)
+
+**Use the portable app for the easiest experience (no installation required):**
+
+1.  Clone or download this repository.
+2.  Double-click **`run_portable.bat`**.
+    -   This script will automatically set up a local Python environment, download necessary dependencies (including FFmpeg and the model), and launch the app.
+3.  The app will open in your default browser.
+
+### Features
+-   **Interactive Player**: View drum hits on a piano roll synced with audio.
+-   **Playback Control**: Play, pause, and seek by clicking on the timeline.
+-   **Volume Control**: Adjust playback volume directly in the player.
+-   **Download Predictions**: Export the transcribed drum hits as a CSV file.
+
 ## Quick Start (Google Colab)
 
-The easiest way to use this is with the Google Colab notebook. Click the "Open In Colab" badge above to get started.
+If you prefer running in the cloud, click the "Open In Colab" badge above to use the Google Colab notebook.
 
-## Dependencies
+## Dependencies (Manual Setup)
 
-Run the following to install the python dependencies:
+If you are **not** using the portable script and want to set up the environment manually:
 
-```
-pip install librosa tensorflow numpy pandas scikit-learn streamlit streamlit-player gradio yt-dlp plotly
-```
+1.  Install Python 3.10+.
+2.  Install FFmpeg and add it to your system PATH.
+3.  Install Python dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  Download the model:
+    -   Ensure `model/drum_transcriber.h5` exists. You can download it [here](https://drive.google.com/file/d/1w2fIHeyr-st3sbk1PYrtGOYW6YAD1fsi/view?usp=sharing).
 
 ## Usage
 
-### Using Gradio (Recommended)
-
-Run the **Gradio** app for a better UI and YouTube support:
+### Run Gradio App (Recommended)
 
 ```bash
 python gradio_app.py
 ```
 
-### Basic Usage (Python)
+### Basic Usage (Script)
 ```Python
 from DrumTranscriber import DrumTranscriber
 import librosa
 
-samples, sr = librosa.load(PATH/TO/AUDIO/CLIP)
+samples, sr = librosa.load("PATH/TO/AUDIO.wav")
 
 transcriber = DrumTranscriber()
 
 # pandas dataframe containing probabilities of classes
 predictions = transcriber.predict(samples, sr)
+print(predictions)
 ```
-
-### For Streamlit (Legacy)
-
-cd to the parent directory and run the following command:
-```
-streamlit run frontend.py
-```
-A localhost website will appear with the demo app.
-
-
-## Getting Started Locally
-
-1. Clone/Zip the directory
-2. Redownload the model .h5 file from `/model/drum_transcriber.h5` (https://drive.google.com/file/d/1w2fIHeyr-st3sbk1PYrtGOYW6YAD1fsi/view?usp=sharing)
-
-**Note**: There is an issue with Github zipping the .h5 model file. To properly get the model to work, I suggest downloading the model file from the Google Drive above and directly to replace the model from the clone/zipped folder. 

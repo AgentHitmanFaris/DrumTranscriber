@@ -1,2 +1,12 @@
 
 *.pyc
+__pycache__/
+python_embed/
+ffmpeg/
+bin/
+model/
+.gradio/
+temp_audio.*
+*.wav
+predictions.csv
+.vscode/
