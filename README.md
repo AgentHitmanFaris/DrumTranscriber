@@ -1,61 +1,61 @@
-# Drum Transcriber - Transcribe Drum Audio Clips
+# Drum Transcriber
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AgentHitmanFaris/DrumTranscriber/blob/main/DrumTranscriber_Colab.ipynb)
 
-This package helps users transcribes drum audio hits into 6 classes - Hihat, Crash, Kick Drum, Snare, Ride, and Toms.
+Automatic drum transcription system capable of detecting and classifying drum hits into six distinct classes: **Kick, Snare, Hi-Hat (Closed), Tom (High), Ride, and Crash**. The application features an interactive web interface with a synchronized audio player and piano roll visualization.
 
-![demo](https://github.com/AgentHitmanFaris/DrumTranscriber/blob/main/assets/demo.gif?raw=true)
+## Quick Start (Windows Portable)
 
-## Quick Start (Windows Portable App)
-
-**Use the portable app for the easiest experience (no installation required):**
+For the easiest experience on Windows without manual installation:
 
 1.  Clone or download this repository.
-2.  Double-click **`run_portable.bat`**.
-    -   This script will automatically set up a local Python environment, download necessary dependencies (including FFmpeg and the model), and launch the app.
-3.  The app will open in your default browser.
+2.  Run the **`run_portable.bat`** script.
+3.  The application will automatically configure a local Python environment, download dependencies, and launch in your default web browser.
 
-### Features
--   **Interactive Player**: View drum hits on a piano roll synced with audio.
--   **Playback Control**: Play, pause, and seek by clicking on the timeline.
--   **Volume Control**: Adjust playback volume directly in the player.
--   **Download Predictions**: Export the transcribed drum hits as a CSV file.
+## Cloud Deployment
 
-## Quick Start (Google Colab)
+This project is optimized for Google Colab. Click the badge above to launch the notebook, which handles environment setup and model downloading automatically.
 
-If you prefer running in the cloud, click the "Open In Colab" badge above to use the Google Colab notebook.
+## Manual Installation
 
-## Dependencies (Manual Setup)
+If you prefer to configure the environment manually, ensure you have Python 3.10+ and FFmpeg installed.
 
-If you are **not** using the portable script and want to set up the environment manually:
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-1.  Install Python 3.10+.
-2.  Install FFmpeg and add it to your system PATH.
-3.  Install Python dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  Download the model:
-    -   Ensure `model/drum_transcriber.h5` exists. You can download it [here](https://drive.google.com/file/d/1w2fIHeyr-st3sbk1PYrtGOYW6YAD1fsi/view?usp=sharing).
+### 2. Download Model
+Download the pre-trained model (`drum_transcriber.h5`) and place it in the `model/` directory.
+[Download Link](https://drive.google.com/file/d/1w2fIHeyr-st3sbk1PYrtGOYW6YAD1fsi/view?usp=sharing)
 
-## Usage
-
-### Run Gradio App (Recommended)
-
+### 3. Run Application
 ```bash
 python gradio_app.py
 ```
 
-### Basic Usage (Script)
-```Python
+## Features
+
+-   **Multi-Class Transcription**: Accurately identifies 6 different drum components.
+-   **Interactive Visualization**: Web-based piano roll with real-time audio synchronization.
+-   **Playback Control**: Seek, play, and pause directly from the visual interface.
+-   **CSV Export**: Download transcription data for use in DAWs or other analysis tools.
+-   **YouTube Integration**: helper to download and transcribe audio directly from YouTube URLs.
+
+## Python API Usage
+
+To use the transcriber programmatically:
+
+```python
 from DrumTranscriber import DrumTranscriber
 import librosa
 
-samples, sr = librosa.load("PATH/TO/AUDIO.wav")
+# Load audio
+samples, sr = librosa.load("path/to/audio.wav")
 
+# Initialize and predict
 transcriber = DrumTranscriber()
-
-# pandas dataframe containing probabilities of classes
 predictions = transcriber.predict(samples, sr)
-print(predictions)
+
+print(predictions.head())
 ```
