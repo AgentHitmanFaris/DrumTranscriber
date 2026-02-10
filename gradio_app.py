@@ -19,7 +19,19 @@ except Exception as e:
     print("Ensure 'model/drum_transcriber.h5' exists. If on Colab, check the download step.")
     transcriber = None
 
-def download_audio(url):
+def download_audio(url, progress=gr.Progress()):
+    progress(0, desc="Starting download...")
+    
+    def progress_hook(d):
+        if d['status'] == 'downloading':
+            try:
+                p = d.get('_percent_str', '0%').replace('%','')
+                progress(float(p)/100, desc=f"Downloading: {d.get('_percent_str', '')}")
+            except:
+                pass
+        elif d['status'] == 'finished':
+            progress(1.0, desc="Download complete, converting...")
+
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
@@ -30,6 +42,7 @@ def download_audio(url):
         'outtmpl': 'temp_audio.%(ext)s',
         'quiet': True,
         'no_warnings': True,
+        'progress_hooks': [progress_hook]
     }
     
     # Remove existing temp file if it exists
@@ -43,16 +56,13 @@ def download_audio(url):
         except Exception as e:
             return None, f"Error downloading video: {e}"
 
-def process_audio(audio_file, start_time, duration=30):
+def process_audio(audio_file, start_time, duration=30, progress=gr.Progress()):
     if not audio_file:
         return None, None, None, "No audio file provided."
     
-    # If audio_file is a tuple (sr, data) from Gradio mic/upload, we'd need to save it or handle it.
-    # But for now assuming file path.
-    
     try:
+        progress(0.1, desc="Loading Audio...")
         # Load audio
-        # librosa.load can take a file path
         samples, sr = librosa.load(audio_file, sr=44100, offset=start_time, duration=duration)
     except Exception as e:
         return None, None, None, f"Error loading audio: {e}"
@@ -62,27 +72,23 @@ def process_audio(audio_file, start_time, duration=30):
 
     # Predict
     try:
+        progress(0.4, desc="Transcribing (this may take a moment)...")
         preds = transcriber.predict(samples, sr)
     except Exception as e:
         return None, None, None, f"Error during prediction: {e}"
 
     # Process predictions
+    progress(0.8, desc="Processing Results...")
     top_indices = np.argmax(preds[list(SETTINGS['LABELS_INDEX'].values())].to_numpy(), axis=1)
     labelled_preds = [SETTINGS['LABELS_INDEX'][i] for i in top_indices]
     
     preds['prediction'] = labelled_preds
-    preds['confidence'] = preds.apply(lambda x: x[x['prediction']], axis=1) # Get confidence of the predicted class
-    
-    # Filter for hits (optional: could filter by confidence threshold if needed, but showing all for now)
-    # The original code just returns everything. Let's keep it consistent but maybe cleaner.
+    preds['confidence'] = preds.apply(lambda x: x[x['prediction']], axis=1)
     
     return samples, sr, preds, None
 
 def create_plot(preds, duration):
     # Create a "Drum Roll" view (Piano Roll style)
-    
-    # Map labels to Y-axis positions for better ordering
-    # Kick usually at bottom, Cymbals at top
     label_order = ['kick_drum', 'snare', 'tom_h', 'hihat_c', 'ride', 'crash']
     
     fig = go.Figure()
@@ -119,37 +125,41 @@ def create_plot(preds, duration):
     
     return fig
 
-def run_pipeline(url, file_upload, start_time):
-    # Determine input source
+def run_pipeline(url, file_upload, start_time, progress=gr.Progress()):
     audio_path = None
     status_msg = ""
     
     if url:
         status_msg += "Downloading from YouTube... "
-        audio_path = download_audio(url)
-        if isinstance(audio_path, tuple): # Error tuple
-            return None, None, None, audio_path[1]
+        # progress object is passed automatically by Gradio if argument is named 'progress' 
+        # but we can also pass it explicitly if we want to be sure, though Gradio handles the context.
+        # We'll pass it to verify.
+        audio_path_result = download_audio(url, progress)
+        
+        if isinstance(audio_path_result, tuple): 
+            # It returned (None, error_message)
+            return None, None, None, audio_path_result[1]
+        
+        audio_path = audio_path_result
+        
     elif file_upload:
         audio_path = file_upload
     else:
         return None, None, None, "Please provide a YouTube URL or upload an audio file."
 
     status_msg += "Processing Audio... "
-    samples, sr, preds, error = process_audio(audio_path, start_time)
+    samples, sr, preds, error = process_audio(audio_path, start_time, duration=30, progress=progress)
     
     if error:
         return None, None, None, error
 
-    # Save processed audio segment to temp file for playback if needed, 
-    # but Gradio can take numpy array for audio output: (sr, samples)
+    progress(0.9, desc="Generating Plot...")
+    fig = create_plot(preds, 30)
     
-    # Visualization
-    fig = create_plot(preds, 30) # Assuming 30s max duration as per input
-    
-    # CSV
     csv_path = "predictions.csv"
     preds.to_csv(csv_path, index=False)
     
+    progress(1.0, desc="Done!")
     return (sr, samples), fig, csv_path, "Done!"
 
 
