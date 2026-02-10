@@ -1,61 +1,90 @@
 # Drum Transcriber
 
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15-orange.svg)](https://tensorflow.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/AgentHitmanFaris/DrumTranscriber/blob/main/DrumTranscriber_Colab.ipynb)
 
-Automatic drum transcription system capable of detecting and classifying drum hits into six distinct classes: **Kick, Snare, Hi-Hat (Closed), Tom (High), Ride, and Crash**. The application features an interactive web interface with a synchronized audio player and piano roll visualization.
+**A production-grade drum transcription system employing deep learning to classify drum hits into six distinct classes.**
 
-## Quick Start (Windows Portable)
+This application features a modern, interactive web interface for visualize drum transcriptions in real-time, offering a seamless experience for musicians, producers, and developers.
 
-For the easiest experience on Windows without manual installation:
+## Live Demo
 
-1.  Clone or download this repository.
-2.  Run the **`run_portable.bat`** script.
-3.  The application will automatically configure a local Python environment, download dependencies, and launch in your default web browser.
+Experience the full capabilities of Drum Transcriber instantly via Google Colab. No local installation required.
 
-## Cloud Deployment
+[**Launch Interactive Demo**](https://colab.research.google.com/github/AgentHitmanFaris/DrumTranscriber/blob/main/DrumTranscriber_Colab.ipynb)
 
-This project is optimized for Google Colab. Click the badge above to launch the notebook, which handles environment setup and model downloading automatically.
+## Key Features
+
+-   **High-Fidelity Transcription**: Detects Kick, Snare, Hi-Hat (Closed), Tom (High), Ride, and Crash with high accuracy.
+-   **Interactive Piano Roll**: HTML5/Canvas-based visualization synchronized with audio playback.
+-   **Precision Controls**: Seek, play, and pause directly on the timeline.
+-   **Data Export**: Download transcription results as structured CSV data.
+-   **YouTube Integration**: Built-in support for direct audio extraction from YouTube.
+
+## Technology Stack
+
+Built with a robust stack of open-source technologies:
+
+-   **Core**: Python 3.10+
+-   **Machine Learning**: TensorFlow / Keras (CNN Architecture)
+-   **Signal Processing**: Librosa, SoundFile
+-   **Web Framework**: Gradio (Reactive UI)
+-   **Visualization**: Custom HTML5 Canvas & Plotly
+
+## Quick Start (Portability Mode)
+
+For Windows users requiring a zero-setup environment:
+
+1.  Clone this repository.
+2.  Execute **`run_portable.bat`**.
+3.  The application handles all dependency management and launches the local server automatically.
 
 ## Manual Installation
 
-If you prefer to configure the environment manually, ensure you have Python 3.10+ and FFmpeg installed.
+For developers integrating this into existing workflows:
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+### Prerequisites
+-   Python 3.10 or higher
+-   FFmpeg installed and available in system PATH
 
-### 2. Download Model
-Download the pre-trained model (`drum_transcriber.h5`) and place it in the `model/` directory.
-[Download Link](https://drive.google.com/file/d/1w2fIHeyr-st3sbk1PYrtGOYW6YAD1fsi/view?usp=sharing)
+### Installation
+1.  **Install Dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### 3. Run Application
-```bash
-python gradio_app.py
-```
+2.  **Model Setup**
+    Download the pre-trained weights (`drum_transcriber.h5`) and place them in the `model/` directory.
+    [**Download Weights**](https://drive.google.com/file/d/1w2fIHeyr-st3sbk1PYrtGOYW6YAD1fsi/view?usp=sharing)
 
-## Features
+3.  **Launch**
+    ```bash
+    python gradio_app.py
+    ```
 
--   **Multi-Class Transcription**: Accurately identifies 6 different drum components.
--   **Interactive Visualization**: Web-based piano roll with real-time audio synchronization.
--   **Playback Control**: Seek, play, and pause directly from the visual interface.
--   **CSV Export**: Download transcription data for use in DAWs or other analysis tools.
--   **YouTube Integration**: helper to download and transcribe audio directly from YouTube URLs.
+## Python API
 
-## Python API Usage
-
-To use the transcriber programmatically:
+Integrate the transcription engine directly into your Python scripts:
 
 ```python
 from DrumTranscriber import DrumTranscriber
 import librosa
 
-# Load audio
-samples, sr = librosa.load("path/to/audio.wav")
+# Load Audio
+audio_path = "path/to/audio.wav"
+samples, sr = librosa.load(audio_path, sr=44100)
 
-# Initialize and predict
+# Initialize Engine
 transcriber = DrumTranscriber()
+
+# Predict
+# Returns a Pandas DataFrame with timestamps and confidence scores
 predictions = transcriber.predict(samples, sr)
 
 print(predictions.head())
 ```
+
+---
+*v1.0.0 - Production Release*
